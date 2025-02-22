@@ -9,7 +9,7 @@ from datetime import datetime
 import threading
 
 # Configuration
-SERVER_URL = "http://192.168.1.1:6969/transcribe"
+SERVER_URL = "http://127.0.0.1:6969/transcribe"
 TRANSCRIPTION_FOLDER = "transcriptions"
 AUDIO_FILE = "recorded_audio.wav"
 FORMAT = pyaudio.paInt16
