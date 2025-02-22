@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Initialize the ASR pipeline on GPU (if available)
 generator = pipeline(
     task="automatic-speech-recognition", 
-    model="whisper-large-v3", 
+    model="openai/whisper-large-v3-turbo", 
     device=0
 )
 
