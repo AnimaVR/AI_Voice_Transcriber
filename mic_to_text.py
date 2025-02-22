@@ -3,6 +3,7 @@ import wave
 import keyboard
 import base64
 import requests
+import json
 import os
 from datetime import datetime
 import threading
@@ -27,6 +28,8 @@ def generate_unique_filename():
 def record_audio(stop_signal):
     """Record audio using pyaudio until the stop_signal is set."""
     p = pyaudio.PyAudio()
+
+    # Create audio stream
     stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
     frames = []
 
@@ -40,6 +43,7 @@ def record_audio(stop_signal):
     stream.close()
     p.terminate()
 
+    # Save the recorded audio as a WAV file
     with wave.open(AUDIO_FILE, 'wb') as wf:
         wf.setnchannels(CHANNELS)
         wf.setsampwidth(p.get_sample_size(FORMAT))
@@ -79,14 +83,14 @@ def save_transcription(transcription):
     print(f"Transcription saved to {unique_filename}")
 
 if __name__ == "__main__":
-    print("Press Space to toggle start/stop recording. Press Esc to quit.")
+    print("Press and hold Right-Ctrl to record. Press Space to toggle start/stop recording. Press Esc to quit.")
 
     stop_signal = threading.Event()
     space_mode_active = False
 
     while True:
         try:
-            # Space mode: Press once to start recording and again to stop.
+            # Space mode: Press once to start and again to stop
             if keyboard.is_pressed("space"):
                 if not space_mode_active:  # Start recording
                     space_mode_active = True
@@ -104,7 +108,17 @@ if __name__ == "__main__":
                     save_transcription(transcription)
                     space_mode_active = False
 
-            # Exit program when Esc is pressed
+            # Right-Ctrl mode: Hold to record
+            elif keyboard.is_pressed("right ctrl"):
+                stop_signal.clear()
+                audio_path = record_audio(stop_signal)
+
+                # Process the audio
+                audio_base64 = audio_to_base64(audio_path)
+                transcription = send_to_api(audio_base64)
+                save_transcription(transcription)
+
+            # Exit program
             elif keyboard.is_pressed("esc"):
                 print("\nProgram exited.")
                 break
@@ -113,4 +127,4 @@ if __name__ == "__main__":
             print("\nProgram exited.")
             break
         except Exception as e:
-            print(f"An error occurred: {e}")
+            print(f"An error occurred: {e}") 
